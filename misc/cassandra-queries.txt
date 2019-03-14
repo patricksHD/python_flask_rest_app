@@ -1,0 +1,14 @@
+CREATE KEYSPACE todo
+  WITH REPLICATION = { 
+   'class' : 'SimpleStrategy', 
+   'replication_factor' : 1 
+  };
+
+  CREATE TABLE todo.todolist ( 
+   id UUID PRIMARY KEY, 
+   details text
+    );
+
+
+INSERT INTO todo.todolist(id,details)
+    VALUES(UUID(),'Do Laundry');

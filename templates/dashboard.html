@@ -6,4 +6,29 @@
 {% for message in get_flashed_messages() %}
   {{ message }}
 {% endfor %}
+<br>
+<p>Search top tweets in Twitter</p>
+<form action="/search_twitter" method="post">
+  <input type="text" placeholder="Keyword" name="keyword" value="{{
+    request.form.keyword }}">
+  <input class="btn btn-default" type="submit" value="Search Twitter">
+</form>
+
+
+<br>
+<p>Add a task to your To-Do</p>
+<form action="/add_todo" method="post">
+  <input type="text" placeholder="Task" name="task" value="{{request.form.task}}">
+  <input class="btn btn-default" type="submit" value="ADD">
+</form>
+
+
+<form action="/get_todo">
+  <input class="btn btn-default" type="submit" value="Show To-Do">
+</form>
+
+<form action="/delete_todo" method="post">
+  <input class="btn btn-default" type="submit" value="Clear All">
+</form>
+
 </html>
