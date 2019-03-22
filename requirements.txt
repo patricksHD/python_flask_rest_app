@@ -1,6 +1,7 @@
 Flask==0.10.1
 pyOpenSSL==19.0.0
-Flask-Bcrypt==0.7.1
+# Flask-Bcrypt==0.7.1
+pandas
 Flask-Cassandra==0.14
 Flask-Hashing==1.1
 Flask-Tweepy==0.1

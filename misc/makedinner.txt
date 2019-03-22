@@ -1,0 +1,9 @@
+Buy Vegetables|Peel Onions|Cut them|Heat the pan|Eat the food|Do the dishes
+
+Goto shop to get vegetables.Make sure you take some money with you|You can't cook vegetables with their skin on, so peel them|Use a knife to cut the vegetable. Careful!|Heat the pan and cook the cut vegetables|Enjoy your meal|Clean and dry the dishes using dish washer. Poor? use your hands.
+
+5|1|2|1|1|5
+
+https://www.riverford.co.uk/shop|https://www.youtube.com/watch?v=LF2JONFhSAQ|https://www.youtube.com/watch?v=fs8cQ_tjsF8|https://www.youtube.com/watch?v=WF9wJ9SvCcw|https://www.youtube.com/watch?v=aLQQi0aiUHk|https://www.youtube.com/watch?v=qddGMCplL2o
+
+1|5|3|4|2|4

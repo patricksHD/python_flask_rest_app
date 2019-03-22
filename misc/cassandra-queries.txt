@@ -1,14 +1,67 @@
-CREATE KEYSPACE todo
-  WITH REPLICATION = { 
-   'class' : 'SimpleStrategy', 
-   'replication_factor' : 1 
-  };
+//CREATE KEYSPACE [IF NOT EXISTS] cycling
+//  WITH REPLICATION = { 
+//   'class' : 'SimpleStrategy', 
+//   'replication_factor' : 1 
+//  };
+  
 
-  CREATE TABLE todo.todolist ( 
+
+//CREATE TABLE  cycling.cyclist_name ( 
+//   id UUID PRIMARY KEY, 
+//   lastname text, 
+//   firstname text );
+   
+//     
+//INSERT INTO cycling.cyclist_name (id, lastname, firstname)
+//VALUES (6ab09bec-e68e-48d9-a5f8-97e6fb4c9b47, 'KRUIKSWIJK','Steven')
+//USING TTL 86400 AND TIMESTAMP 123456789;
+
+//INSERT INTO cycling.cyclist_name (id, lastname, firstname)
+//VALUES (6ab09bec-e68e-48d9-a5f8-97e6fb4c9b47, 'Rajasekar','Shri')
+//USING TTL 86400 AND TIMESTAMP 123456789;
+//   
+//select * from cycling.cyclist_name
+
+
+
+CREATE TABLE todo.tasks ( 
    id UUID PRIMARY KEY, 
-   details text
+   name text,
+   description text,
+   priority text,
+   difficulty text,
+   start text,
+   end text,
+   assignee text
     );
 
 
-INSERT INTO todo.todolist(id,details)
-    VALUES(UUID(),'Do Laundry');
+
+
+CREATE TABLE todo.sub_tasks ( 
+   id UUID PRIMARY KEY, 
+   task_id text,
+   name text,
+   description text,
+   difficulty text,
+   ref text,
+   assignee text
+    );
+    
+    
+CREATE TABLE todo.users ( 
+   id int PRIMARY KEY, 
+   name text,
+   role text
+    );
+    
+INSERT INTO todo.users (id,name,role) VALUES(1,'Adam','admin');
+INSERT INTO todo.users (id,name,role) VALUES(2,'Bob','manager');
+INSERT INTO todo.users (id,name,role) VALUES(3,'Calvin','servant');
+INSERT INTO todo.users (id,name,role) VALUES(4,'David','servant');
+INSERT INTO todo.users (id,name,role) VALUES(5,'Edith','servant');
+INSERT INTO todo.users (id,name,role) VALUES(0,'All','all');
+    
+    
+
+
