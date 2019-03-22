@@ -1,3 +1,9 @@
 #Store sensitive parameters here
 DEBUG = True
 SECRET_KEY = "secret_session_key_qmul"
+TWITTER_CONSUMER_KEY = "bkImmipgdmqHfSiAgq6c0iJb6"
+TWITTER_CONSUMER_SECRET = "zjGUOdFKc1vDI59tGXZErCqML4Mgig6l4pswC1aaNQo8ABh5eo"
+TWITTER_ACCESS_TOKEN = "746669536418500608-dD0ZaG5jcRNrecwklnL4GM4tLCgo1Rb"
+TWITTER_ACCESS_SECRET = "p5NYOgrfmXIb7UoF3BOKwKP589zF6i39IMbpZlOvzFKgX"
+SALT = "hashingsalt123"
+PASS = "admin123"

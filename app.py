@@ -105,7 +105,7 @@ def add_todo():
     # session.execute(cql)
     # return_cql = "SELECT * FROM tasks"
     # r = session.execute(return_cql)
-    res="hi"
+    res="Added Successfully!"
     # for i in r:
     #     res = res+str(i)+"\n"
     return res
@@ -155,7 +155,8 @@ def get_task_by_id(id):
     id=id.replace("<","")
     session = cassandra.connect()
     session.set_keyspace("todo")
-    cql = "SELECT * FROM sub_tasks"
+    print(id)
+    cql = "SELECT * FROM sub_tasks where task_id = '"+str(id)+"' ALLOW FILTERING"
     r = list (session.execute(cql))
     print(len(r))
     res_htm = "<h1>Task Details</h1><h2> Sub Tasks to perform : </h2><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>Sequence Number</th><th style ='border: 1px solid #dddddd'>Sub-TaskName</th><th style ='border: 1px solid #dddddd'>Assignee</th><th style ='border: 1px solid #dddddd'>Role</th></tr>"
@@ -182,6 +183,29 @@ def get_sub_task_by_id(id):
         res_htm = res_htm + "<tr><td style ='border: 1px solid #dddddd'>"+str(row.id)+"</td><td style ='border: 1px solid #dddddd'>"+str(row.name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(row.description)+"</td><td style ='border: 1px solid #dddddd'>"+str(row.difficulty)+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].role).capitalize()+"</td><td style ='border: 1px solid #dddddd'><a href = "+str(row.ref)+">"+str(row.ref)+"</a></td><td style ='border: 1px solid #dddddd'><a href= /get_task_by_id<"+str(row.task_id)+">"+str(t[0].name).capitalize()+"</a></td></tr>"
     res_htm = res_htm+"</table>"
     return res_htm
+
+@app.route("/rest/get_all_sub_tasks")
+def get_all_sub_tasks_rest():
+    session = cassandra.connect()
+    session.set_keyspace("todo")
+    cql = "SELECT * FROM sub_tasks"
+    r = list (session.execute(cql))
+    # res=r[0]
+    res = "{ \"content\":["
+
+    for i,row in enumerate(r,0):              
+        if((i+1)==len(r)):
+            res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"}"
+            # res = res +  "{\"id\": \""+str(row.id)+"\", \"details\": \""+str(row.description)+"\"}"
+        else:
+            res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"},"
+            # res = res +  "{\"id\": \""+str(row.id)+"\", \"details\": \""+str(row.description)+"\"},"
+        # res = res + str(row)
+    res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \"https://localhost:5000/get_sub_task_by_id< bae50b56-19a8-4ece-92ae-c5eeb2dc81a2\" \n }]}"
+    print(res)
+    # print(type(res_htm))
+    
+    return res
 
 
 @app.route('/dashboard')
