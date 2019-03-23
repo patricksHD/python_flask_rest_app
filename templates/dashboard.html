@@ -34,16 +34,57 @@
 
   <br>
   
-  <input class="btn btn-default" type="submit" value="ADD">
+  <input class="btn btn-default" type="submit" value="Add new task">
+</form>
+
+<table>
+  <tr>
+    <td></td>
+    <td>
+    <form action="/get_all_tasks">
+    <input class="btn btn-default" type="submit" value="Show all tasks">
+    </form>
+    </td>
+    <td>
+        <form action="/delete_all_tasks" method="post">
+          <input class="btn btn-default" type="submit" value="Clear all tasks">
+        </form>
+    </td>
+</tr>
+
+</table>
+
+
+
+
+
+<h2>Manage users and employees</h2>
+
+
+
+<table>
+  <tr>
+    <td>
+        <form action="/get_all_workers">
+          <input class="btn btn-default" type="submit" value="View all employees">
+        </form>
+    </td>
+    <td>
+        <form action="/get_all_users">
+          <input class="btn btn-default" type="submit" value="View all app users">
+        </form>
+
+    </td>
+  </tr>
+
+</table>
+<form action="/add_worker" method="post">
+  <input type="text" placeholder="Employee name" name="name" value="{{request.form.name}}">
+  <input type="text" placeholder="Role" name="role" value="{{request.form.role}}">
+<input class="btn btn-default" type="submit" value="Add employee">
 </form>
 
 
-<form action="/get_all_todo">
-  <input class="btn btn-default" type="submit" value="Show To-Do">
-</form>
 
-<form action="/delete_todo" method="post">
-  <input class="btn btn-default" type="submit" value="Clear All">
-</form>
 
 </html>
