@@ -113,7 +113,7 @@ def add_todo():
         print(s)
         session.execute(sub_tasks_cql)
         
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Task '" + task_name + "' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_task_details_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_task_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Task '" + task_name + "' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_task_details_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_task_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
     res="Task '" + task_name + "' added Successfully!"
     return res
@@ -127,7 +127,7 @@ def delete_all_tasks():
     session.execute(tcql)
     scql = "TRUNCATE TABLE sub_tasks"
     session.execute(scql)
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted all tasks and corresponding sub-tasks successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/dashboard\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted all tasks and corresponding sub-tasks successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/dashboard\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
     
 
@@ -201,7 +201,7 @@ def add_worker():
     worker_cql = "INSERT INTO todo.users(id,name,role) VALUES("+str(id)+",'"+nullTostr(name.replace("'","''"))+"','"+nullTostr(role.replace("'","''"))+"');"   
     print(worker_cql)
     session.execute(worker_cql)      
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Employee '" + name + "' with role '"+ role+"' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_workers\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_worker_by_id<"+str(id)+"\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Employee '" + name + "' with role '"+ role+"' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_workers\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_worker_by_id<"+str(id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
 #------------------- REST implementation with HATEOAS ----------------
 
@@ -221,7 +221,7 @@ def get_all_tasks_rest():
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"priority\": \""+str(row.priority)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"start\": \""+str(row.start)+"\", \"end\": \""+str(row.end)+"\"}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"priority\": \""+str(row.priority)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"start\": \""+str(row.start)+"\", \"end\": \""+str(row.end)+"\"},"                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<339610a6-7b04-4590-826c-4cbaed1c02c2\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<339610a6-7b04-4590-826c-4cbaed1c02c2\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -245,7 +245,7 @@ def get_task_details_by_id_rest(id):
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"priority\": \""+str(row.priority)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"start\": \""+str(row.start)+"\", \"end\": \""+str(row.end)+"\"}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"priority\": \""+str(row.priority)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"start\": \""+str(row.start)+"\", \"end\": \""+str(row.end)+"\"},"                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<"+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_task_by_id<"+id+"\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<"+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -273,7 +273,7 @@ def delete_task_by_id(id):
         deleteSubTaskcql = "DELETE FROM sub_tasks where id="+str(row.id)
         print(deleteSubTaskcql)
         session.execute(deleteSubTaskcql)
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted task '"+ tname +"' and corresponding sub-tasks!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<"+id+"\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted task '"+ tname +"' and corresponding sub-tasks!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
 
 
@@ -293,7 +293,7 @@ def get_all_sub_tasks_rest():
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"},"                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/get_sub_task_by_id< bae50b56-19a8-4ece-92ae-c5eeb2dc81a2\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/get_sub_task_by_id< bae50b56-19a8-4ece-92ae-c5eeb2dc81a2\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -318,7 +318,7 @@ def get_sub_task_details_rest(id):
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"},"                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_sub_task_details_by_id< "+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_sub_task_by_id< "+id+"\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_sub_task_details_by_id< "+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_sub_task_by_id< "+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -343,7 +343,7 @@ def get_sub_tasks_by_task_id_rest(id):
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"assignee\": \""+str(row.assignee)+"\", \"description\": \""+str(row.description)+"\", \"difficulty\": \""+str(row.difficulty)+"\", \"name\": \""+str(row.name)+"\", \"ref\": \""+str(row.ref)+"\", \"task_id\": \""+str(row.task_id)+"\"},"                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/get_sub_task_by_id< bae50b56-19a8-4ece-92ae-c5eeb2dc81a2\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/get_sub_task_by_id< bae50b56-19a8-4ece-92ae-c5eeb2dc81a2\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -363,7 +363,7 @@ def delete_sub_task_by_id(id):
     cql = "DELETE FROM sub_tasks where id = "+id
     print(cql)
     session.execute(cql)    
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted sub-task '"+ sname +"'\","+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_sub_task_details_by_id<"+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_sub_task_by_id<"+id+"\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted sub-task '"+ sname +"'\","+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_sub_task_details_by_id<"+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_sub_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
 
 #------------ Workers/Employees ----------- 
@@ -383,7 +383,7 @@ def get_all_workers_rest():
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"name\": \""+str(row.name)+"\", \"role\": \""+str(row.role)+"\"\n}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"name\": \""+str(row.name)+"\", \"role\": \""+str(row.role)+"\"},"                                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_worker_by_id< "+str(row.id)+"\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_worker_by_id< "+str(row.id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -405,7 +405,7 @@ def get_all_users_rest():
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"name\": \""+str(row.uname)+"\", \"role\": \""+str(row.role)+"\"\n}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"name\": \""+str(row.uname)+"\", \"role\": \""+str(row.role)+"\"},"                                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_user_by_id< "+str(row.id)+"\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_user_by_id< "+str(row.id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\"}"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -460,7 +460,7 @@ def get_worker_by_id(id):
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"user name\": \""+str(row.name)+"\", \"role\": \""+str(row.role)+"\"\n}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"user name\": \""+str(row.name)+"\", \"role\": \""+str(row.role)+"\"},"                                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_worker_by_id< "+str(row.id)+"\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_worker_by_id< "+str(row.id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -486,7 +486,7 @@ def get_user_by_id(id):
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"user name\": \""+str(row.uname)+"\", \"role\": \""+str(row.role)+"\"\n}"                
             else:
                 res = res +  "{\"id\": \""+str(row.id)+"\", \"user name\": \""+str(row.uname)+"\", \"role\": \""+str(row.role)+"\"},"                                
-        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_user_by_id< "+str(row.id)+"\" \n }]}"
+        res = res + "],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_user_by_id< "+str(row.id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
         result = Response (res, status = 200, mimetype = 'application/json')
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -508,7 +508,7 @@ def delete_worker_by_id(id):
     cql = "DELETE FROM users where id = "+id
     print(cql)
     session.execute(cql)    
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted worker'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_workers\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted worker'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+"/rest/get_all_workers\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
 
 
@@ -527,7 +527,7 @@ def delete_user_by_id(id):
     cql = "DELETE FROM login where id = "+id
     print(cql)
     session.execute(cql)    
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted user'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_users\" \n }]}"
+    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted user'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_users\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
     return Response (result, status = 200, mimetype = 'application/json')
 
 
