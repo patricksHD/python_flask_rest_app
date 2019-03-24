@@ -32,12 +32,27 @@ def login_required(f):
             return redirect(url_for('login'))
     return wrap
 
-def role_based_access_control(f):
+def role_based_access_control_admin(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         print('Verifying role')
         print(session['role'])
         if 'role' in session and session['role'] == "admin":
+            print("Authorized")
+            return f(*args, **kwargs)
+
+        else:
+            print("Not Authorized")
+            flash('You are not authorized to perform this action!.')
+            return redirect(url_for('login'))
+    return wrap
+
+def role_based_access_control_manager(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        print('Verifying role')
+        print(session['role'])
+        if 'role' in session and (session['role'] == "manager" or session['role'] == "admin"):
             print("Authorized")
             return f(*args, **kwargs)
 
@@ -207,7 +222,7 @@ def get_sub_task_by_id(id):
 
 @app.route('/add_worker', methods=['GET', 'POST'])
 @login_required
-@role_based_access_control
+@role_based_access_control_admin
 def add_worker():
     try:
         session = cassandra.connect()
@@ -402,6 +417,7 @@ def delete_sub_task_by_id(id):
 
 @app.route("/rest/get_all_workers")
 @login_required
+@role_based_access_control_manager
 def get_all_workers_rest():
     result = ""
     try:
@@ -423,7 +439,7 @@ def get_all_workers_rest():
 
 @app.route("/rest/get_all_users")
 @login_required
-@role_based_access_control
+@role_based_access_control_admin
 def get_all_users_rest():
     result = ""
     try:
@@ -444,6 +460,7 @@ def get_all_users_rest():
     return result
 
 @app.route("/get_all_workers")
+@role_based_access_control_manager
 @login_required
 def get_all_workers():
     try:
@@ -464,7 +481,7 @@ def get_all_workers():
 
 @app.route("/get_all_users")
 @login_required
-@role_based_access_control
+@role_based_access_control_admin
 def get_all_users():
     try:
         session = cassandra.connect()
@@ -510,7 +527,7 @@ def get_worker_by_id(id):
 
 @app.route("/rest/get_user_by_id<id>")
 @login_required
-@role_based_access_control
+@role_based_access_control_admin
 def get_user_by_id(id):
     try:
         id=id.replace("<","")
@@ -536,7 +553,7 @@ def get_user_by_id(id):
 
 @app.route('/rest/delete_worker_by_id<id>', methods=['GET', 'POST'])
 @login_required
-@role_based_access_control
+@role_based_access_control_admin
 def delete_worker_by_id(id):
     try:
         id=id.replace("<","")
@@ -556,10 +573,11 @@ def delete_worker_by_id(id):
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
     return result
 
+#---------Delete App user by ID - Only the admin of the application has access ---------
 
 @app.route('/rest/delete_user_by_id<id>', methods=['GET', 'POST'])
 @login_required
-@role_based_access_control
+@role_based_access_control_admin
 def delete_user_by_id(id):
     try:
         id=id.replace("<","")
@@ -582,8 +600,6 @@ def delete_user_by_id(id):
 
 
 
-#---------Delete App user by ID - Only the admin of the application has access ---------
-
 
 @app.route('/dashboard')
 @login_required
@@ -592,15 +608,22 @@ def dashboard():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
     try:
+        error = None
         sess = cassandra.connect()
         sess.set_keyspace("todo")
+        print("logiin")
+        pwd = ""
+        role= ""
         if request.method == 'POST':
             pwdcql = "SELECT * from login where uname = '" + request.form['username'] +"' ALLOW FILTERING"
             r =  list(sess.execute(pwdcql))
-            pwd = r[0].pwd
-            role = r[0].role
+            if len(r)>0:
+                pwd = r[0].pwd
+                role = r[0].role
+            if len(r)==0:
+                print("No such user!")
+                error = "No such user"
             if  not(pwd == hashing.hash_value(request.form['password'], salt=app.config['SALT'])):
                 error = 'Invalid Credentials. Please try again. Why not sign up if you dont have an account?'
             else:
@@ -608,10 +631,10 @@ def login():
                 session['role'] = role
                 print(session['role'])
                 return redirect(url_for('dashboard'))
-            return render_template('login.html', error=error)
+        return render_template('login.html', error=error)
     except Exception as e:
-        return("No such user!.Please sign-up")       
-    return render_template('login.html', error=error)
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
     
 
 @app.route('/signup', methods=['GET', 'POST'])
