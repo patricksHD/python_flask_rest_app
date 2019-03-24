@@ -14,7 +14,7 @@ The following implementations are made as per mini-project specification
 4. Support for cloud scalability, deployment in a container environment. (The steps for deploying the application can be found in later sections of this README file. Also a demonstration of deployment and cloud scalability will be presented to the course lecturer as instructed)
 5. Cloud security awareness. (External API key, Password of users and other confidential information are abstracted by including them in config.py file or the database)
 
-The above points are to be considered for 6/10 points and the below add-ons are implemented for 6 more points
+The above implementations are to be considered for 6/10 points and the below add-ons are implemented for 6 more points
 
 1. Demonstration of load balancing and scaling of the application (e.g. kubernetes based load balancing, as well as Cassandra ring scaling)
     - *Testing load balancing* - The application provides many REST APIs starting with the route /rest/. All the responses have HATEOAS       implementation for navigation using APIs alone without the support of UI (However a basic HTML UI is also designed and is in              place). In those responses a field for *Host-IP* is included purposely to show the effect of load-balancing. 
