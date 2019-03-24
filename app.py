@@ -452,10 +452,11 @@ def get_all_workers():
         cql = "SELECT * FROM users"
         r = list (session.execute(cql))
         print(len(r))
-        res_htm = "<h1> List of Employees : </h1><ol>"
+        res_htm = "<h1> List of Employees : </h1><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>EMP ID</th><th style ='border: 1px solid #dddddd'>Name</th><th style ='border: 1px solid #dddddd'>Role</th><th style ='border: 1px solid #dddddd'>Action</th></tr>"
         for i,row in enumerate(r,0): 
-            res_htm = res_htm +"<li><a href= /rest/get_worker_by_id<"+str(row.id)+">"+str(row.name)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click Employee ID for rest call to delete Employee (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/delete_worker_by_id<"+str(row.id)+">"+str(row.id)+"</a>&nbsp;&nbsp;&nbsp;"+str(row.role)+"</li>"
-        res_htm = res_htm+"</ol>"
+            res_htm = res_htm +"<tr><td style ='border: 1px solid #dddddd'>"+str(row.id)+"</td><td style ='border: 1px solid #dddddd'><a href =/rest/get_worker_by_id<"+str(row.id)+">"+str(row.name).capitalize()+"</a></td><td style ='border: 1px solid #dddddd'>"+str(row.role).capitalize()+"</td><td style ='border: 1px solid #dddddd'><a href=/rest/delete_worker_by_id<"+str(row.id)+">Delete</a></td></tr>"
+        res_htm = res_htm+"</table>"
+        print(res_htm)
         result = res_htm
     except Exception as e:         
         result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
@@ -471,9 +472,9 @@ def get_all_users():
         cql = "SELECT * FROM login"
         r = list (session.execute(cql))
         print(len(r))
-        res_htm = "<h1> List of Employees : </h1><ol>"
+        res_htm = "<h1> List of Application users : </h1><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>User ID</th><th style ='border: 1px solid #dddddd'>Name</th><th style ='border: 1px solid #dddddd'>Role</th><th style ='border: 1px solid #dddddd'>Action</th></tr>"
         for i,row in enumerate(r,0): 
-            res_htm = res_htm +"<li><a href= /rest/get_user_by_id<"+str(row.id)+">"+str(row.uname)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click User ID for rest call to delete Employee (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/delete_user_by_id<"+str(row.id)+">"+str(row.id)+"</a>&nbsp;&nbsp;&nbsp;"+str(row.role)+"</li>"
+            res_htm = res_htm +"<tr><td style ='border: 1px solid #dddddd'>"+str(row.id)+"</td><td style ='border: 1px solid #dddddd'><a href =/rest/get_user_by_id<"+str(row.id)+">"+str(row.uname).capitalize()+"</a></td><td style ='border: 1px solid #dddddd'>"+str(row.role).capitalize()+"</td><td style ='border: 1px solid #dddddd'><a href=/rest/delete_user_by_id<"+str(row.id)+">Delete</a></td></tr>"
         res_htm = res_htm+"</ol>"
         result = res_htm
     except Exception as e:         
