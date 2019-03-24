@@ -65,6 +65,7 @@ CREATE TABLE todo.login (
   
 
 INSERT INTO todo.login (id,pwd,uname,role) VALUES(UUID(),'590b942f5a84e911f0b45b2bfdb357e75b35ac916e8f6cb3cd4c044166f4a2b6','admin','admin');
+INSERT INTO todo.login (id,pwd,uname,role) VALUES(UUID(),'590b942f5a84e911f0b45b2bfdb357e75b35ac916e8f6cb3cd4c044166f4a2b6','manager','manager');
 
 INSERT INTO todo.users (id,name,role) VALUES(1,'Adam','admin');
 INSERT INTO todo.users (id,name,role) VALUES(2,'Bob','manager');
