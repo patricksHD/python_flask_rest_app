@@ -89,46 +89,54 @@ def search_twitter():
 @app.route('/add_todo', methods=['GET', 'POST'])
 @login_required
 def add_todo():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    task_name = request.form['task_name']
-    task_description = request.form['task_description']
-    task_priority = request.form['task_priority']
-    task_start = request.form['task_start']
-    task_end = request.form['task_end']
-    task_difficulty = request.form['task_difficulty']
-    task_assignee = request.form['task_assignee']
-    subtasks_names = request.form['subtasks_names']
-    subtasks_descriptions = request.form['subtasks_descriptions']
-    subtasks_difficulties = request.form['subtasks_difficulties']
-    subtasks_refs = request.form['subtasks_refs']
-    subtasks_assignees = request.form['subtasks_assignees']
-    id = str(uuid.uuid4())
-    task_cql = "INSERT INTO todo.tasks(id,name,description,priority,difficulty,start,end,assignee) VALUES("+id+",'"+nullTostr(task_name.replace("'","''"))+"','"+nullTostr(task_description.replace("'","''"))+"','"+nullTostr(task_priority.replace("'","''"))+"','"+nullTostr(task_difficulty.replace("'","''"))+"','"+nullTostr(task_start.replace("'","''"))+"','"+nullTostr(task_end.replace("'","''"))+"','"+nullTostr(task_assignee.replace("'","''"))+"');"   
-    print(task_cql)
-    session.execute(task_cql)
-    
-    for i,s in enumerate(subtasks_names.split('|')):
-        sub_tasks_cql = "INSERT INTO todo.sub_tasks(id,task_id,name,description,difficulty,ref,assignee) VALUES(UUID()"+",'"+id+"','"+nullTostr(s.replace("'","''"))+"','"+nullTostr(subtasks_descriptions.split('|')[i].replace("'","''"))+"','"+nullTostr(subtasks_difficulties.split('|')[i].replace("'","''"))+"','"+nullTostr(subtasks_refs.split('|')[i].replace("'","''"))+"','"+nullTostr(subtasks_assignees.split('|')[i].replace("'","''"))+"')"   
-        print(s)
-        session.execute(sub_tasks_cql)
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        task_name = request.form['task_name']
+        task_description = request.form['task_description']
+        task_priority = request.form['task_priority']
+        task_start = request.form['task_start']
+        task_end = request.form['task_end']
+        task_difficulty = request.form['task_difficulty']
+        task_assignee = request.form['task_assignee']
+        subtasks_names = request.form['subtasks_names']
+        subtasks_descriptions = request.form['subtasks_descriptions']
+        subtasks_difficulties = request.form['subtasks_difficulties']
+        subtasks_refs = request.form['subtasks_refs']
+        subtasks_assignees = request.form['subtasks_assignees']
+        id = str(uuid.uuid4())
+        task_cql = "INSERT INTO todo.tasks(id,name,description,priority,difficulty,start,end,assignee) VALUES("+id+",'"+nullTostr(task_name.replace("'","''"))+"','"+nullTostr(task_description.replace("'","''"))+"','"+nullTostr(task_priority.replace("'","''"))+"','"+nullTostr(task_difficulty.replace("'","''"))+"','"+nullTostr(task_start.replace("'","''"))+"','"+nullTostr(task_end.replace("'","''"))+"','"+nullTostr(task_assignee.replace("'","''"))+"');"   
+        print(task_cql)
+        session.execute(task_cql)
         
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Task '" + task_name + "' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_task_details_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_task_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
-    res="Task '" + task_name + "' added Successfully!"
-    return res
+        for i,s in enumerate(subtasks_names.split('|')):
+            sub_tasks_cql = "INSERT INTO todo.sub_tasks(id,task_id,name,description,difficulty,ref,assignee) VALUES(UUID()"+",'"+id+"','"+nullTostr(s.replace("'","''"))+"','"+nullTostr(subtasks_descriptions.split('|')[i].replace("'","''"))+"','"+nullTostr(subtasks_difficulties.split('|')[i].replace("'","''"))+"','"+nullTostr(subtasks_refs.split('|')[i].replace("'","''"))+"','"+nullTostr(subtasks_assignees.split('|')[i].replace("'","''"))+"')"   
+            print(s)
+            session.execute(sub_tasks_cql)
+            
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Task '" + task_name + "' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_task_details_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_task_by_id<"+str(id)+"\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        return Response (result, status = 200, mimetype = 'application/json')
+        res="Task '" + task_name + "' added Successfully!"
+        result = res
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
     
 @app.route('/delete_all_tasks', methods=['GET', 'POST'])
 @login_required
 def delete_all_tasks():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    tcql = "TRUNCATE TABLE tasks"
-    session.execute(tcql)
-    scql = "TRUNCATE TABLE sub_tasks"
-    session.execute(scql)
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted all tasks and corresponding sub-tasks successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/dashboard\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        tcql = "TRUNCATE TABLE tasks"
+        session.execute(tcql)
+        scql = "TRUNCATE TABLE sub_tasks"
+        session.execute(scql)
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted all tasks and corresponding sub-tasks successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/dashboard\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        result = Response (result, status = 200, mimetype = 'application/json')
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
     
 
 
@@ -136,73 +144,90 @@ def delete_all_tasks():
 @app.route("/get_all_tasks")
 @login_required
 def get_tasks():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    cql = "SELECT * FROM tasks"
-    r = list (session.execute(cql))
-    print(len(r))
-    res_htm = "<h1> Tasks to-do : </h1><ol>"
-    for i,row in enumerate(r,0): 
-        res_htm = res_htm +"<li><a href= /get_task_by_id<"+str(row.id)+">"+str(row.name)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click Task ID for rest call to get task details (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/get_task_details_by_id<"+str(row.id)+">"+str(row.id)+"</a></li>"
-    res_htm = res_htm+"</ol>"
-    return res_htm
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        cql = "SELECT * FROM tasks"
+        r = list (session.execute(cql))
+        print(len(r))
+        res_htm = "<h1> Tasks to-do : </h1><ol>"
+        for i,row in enumerate(r,0): 
+            res_htm = res_htm +"<li><a href= /get_task_by_id<"+str(row.id)+">"+str(row.name)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click Task ID for rest call to get task details (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/get_task_details_by_id<"+str(row.id)+">"+str(row.id)+"</a>&emsp;&emsp;&emsp;<a href = /rest/delete_task_by_id<"+str(row.id)+">Delete Task</a></li>"
+        res_htm = res_htm+"</ol>"
+        result = res_htm
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 @app.route("/get_task_by_id<id>")
 @login_required
 def get_task_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    print(id)
-    cql = "SELECT * FROM sub_tasks where task_id = '"+str(id)+"' ALLOW FILTERING"
-    r = list (session.execute(cql))
-    print(len(r))
-    res_htm = "<h1>Task Details</h1><h2> Sub Tasks to perform : </h2><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>Sequence Number</th><th style ='border: 1px solid #dddddd'>Sub-TaskName</th><th style ='border: 1px solid #dddddd'>Assignee</th><th style ='border: 1px solid #dddddd'>Role</th></tr>"
-    for i,row in enumerate(r,0): 
-        u_cql = "SELECT * FROM users where id = "+str(row.assignee)
-        u = list (session.execute(u_cql))
-        res_htm = res_htm +"<tr><td style ='border: 1px solid #dddddd'>"+str(i+1)+"</td><td style ='border: 1px solid #dddddd'><a href =/get_sub_task_by_id<"+str(row.id)+">"+str(row.name)+"</a></td><td style ='border: 1px solid #dddddd'>"+str(u[0].name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].role).capitalize()+"</td></tr>"
-    res_htm = res_htm+"</ol>"
-    return res_htm
+    try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        print(id)
+        cql = "SELECT * FROM sub_tasks where task_id = '"+str(id)+"' ALLOW FILTERING"
+        r = list (session.execute(cql))
+        print(len(r))
+        res_htm = "<h1>Task Details</h1><h2> Sub Tasks to perform : </h2><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>Sequence Number</th><th style ='border: 1px solid #dddddd'>Sub-TaskName</th><th style ='border: 1px solid #dddddd'>Assignee</th><th style ='border: 1px solid #dddddd'>Role</th><th style ='border: 1px solid #dddddd'>Action</th></tr>"
+        for i,row in enumerate(r,0): 
+            u_cql = "SELECT * FROM users where id = "+str(row.assignee)
+            u = list (session.execute(u_cql))
+            res_htm = res_htm +"<tr><td style ='border: 1px solid #dddddd'>"+str(i+1)+"</td><td style ='border: 1px solid #dddddd'><a href =/get_sub_task_by_id<"+str(row.id)+">"+str(row.name)+"</a></td><td style ='border: 1px solid #dddddd'>"+str(u[0].name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].role).capitalize()+"</td><td style ='border: 1px solid #dddddd'><a href=\\rest\delete_sub_task_by_id<"+str(row.id)+">Delete</a></td></tr>"
+        res_htm = res_htm+"</ol>"
+        result = res_htm
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 @app.route("/get_sub_task_by_id<id>")
 @login_required
 def get_sub_task_by_id(id):
-    id = id.replace("<","")
-    id=id.replace(">","")
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    cql = "SELECT * FROM sub_tasks where id = "+id
-    r = list (session.execute(cql))
-    res_htm = "<h1> Sub Task Details : </h1><br><h2>Click on Sub-Task ID for REST call (with HATEOAS implementation) </h2><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>Sub-Task ID</th><th style ='border: 1px solid #dddddd'>Name</th><th style ='border: 1px solid #dddddd'>Description</th><th style ='border: 1px solid #dddddd'>Difficulty</th><th style ='border: 1px solid #dddddd'>Assignee</th><th style ='border: 1px solid #dddddd'>Role</th><th style ='border: 1px solid #dddddd'>References</th><th style ='border: 1px solid #dddddd'>Connected to Task</th></tr>"
-    for i,row in enumerate(r,0): 
-        t_cql = "SELECT * FROM tasks where id = "+str(row.task_id)
-        t = list (session.execute(t_cql))        
-        u_cql = "SELECT * FROM users where id = "+str(row.assignee)
-        u = list (session.execute(u_cql))
-        res_htm = res_htm + "<tr><td style ='border: 1px solid #dddddd'><a href = /rest/get_sub_task_details_by_id<"+str(row.id)+">"+str(row.id)+"</a></td><td style ='border: 1px solid #dddddd'>"+str(row.name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(row.description)+"</td><td style ='border: 1px solid #dddddd'>"+str(row.difficulty)+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].role).capitalize()+"</td><td style ='border: 1px solid #dddddd'><a href = "+str(row.ref)+">"+str(row.ref)+"</a></td><td style ='border: 1px solid #dddddd'><a href= /get_task_by_id<"+str(row.task_id)+">"+str(t[0].name).capitalize()+"</a></td></tr>"
-    res_htm = res_htm+"</table>"
-    return res_htm
+    try:
+        id = id.replace("<","")
+        id=id.replace(">","")
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        cql = "SELECT * FROM sub_tasks where id = "+id
+        r = list (session.execute(cql))
+        res_htm = "<h1> Sub Task Details : </h1><br><h2>Click on Sub-Task ID for REST call (with HATEOAS implementation) </h2><table><tr style ='border: 1px solid black'><th style ='border: 1px solid #dddddd'>Sub-Task ID</th><th style ='border: 1px solid #dddddd'>Name</th><th style ='border: 1px solid #dddddd'>Description</th><th style ='border: 1px solid #dddddd'>Difficulty</th><th style ='border: 1px solid #dddddd'>Assignee</th><th style ='border: 1px solid #dddddd'>Role</th><th style ='border: 1px solid #dddddd'>References</th><th style ='border: 1px solid #dddddd'>Connected to Task</th></tr>"
+        for i,row in enumerate(r,0): 
+            t_cql = "SELECT * FROM tasks where id = "+str(row.task_id)
+            t = list (session.execute(t_cql))        
+            u_cql = "SELECT * FROM users where id = "+str(row.assignee)
+            u = list (session.execute(u_cql))
+            res_htm = res_htm + "<tr><td style ='border: 1px solid #dddddd'><a href = /rest/get_sub_task_details_by_id<"+str(row.id)+">"+str(row.id)+"</a></td><td style ='border: 1px solid #dddddd'>"+str(row.name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(row.description)+"</td><td style ='border: 1px solid #dddddd'>"+str(row.difficulty)+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].name).capitalize()+"</td><td style ='border: 1px solid #dddddd'>"+str(u[0].role).capitalize()+"</td><td style ='border: 1px solid #dddddd'><a href = "+str(row.ref)+">"+str(row.ref)+"</a></td><td style ='border: 1px solid #dddddd'><a href= /get_task_by_id<"+str(row.task_id)+">"+str(t[0].name).capitalize()+"</a></td></tr>"
+        res_htm = res_htm+"</table>"
+        result = res_htm
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 @app.route('/add_worker', methods=['GET', 'POST'])
 @login_required
 @role_based_access_control
 def add_worker():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    name = request.form['name']
-    role = request.form['role']   
-    idcql = "SELECT MAX(id) as id FROM users "
-    idres = session.execute(idcql)
-    print(idres[0].id)
-    id = idres[0].id + 1
-    print(id)
-    worker_cql = "INSERT INTO todo.users(id,name,role) VALUES("+str(id)+",'"+nullTostr(name.replace("'","''"))+"','"+nullTostr(role.replace("'","''"))+"');"   
-    print(worker_cql)
-    session.execute(worker_cql)      
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Employee '" + name + "' with role '"+ role+"' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_workers\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_worker_by_id<"+str(id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        name = request.form['name']
+        role = request.form['role']   
+        idcql = "SELECT MAX(id) as id FROM users "
+        idres = session.execute(idcql)
+        print(idres[0].id)
+        id = idres[0].id + 1
+        print(id)
+        worker_cql = "INSERT INTO todo.users(id,name,role) VALUES("+str(id)+",'"+nullTostr(name.replace("'","''"))+"','"+nullTostr(role.replace("'","''"))+"');"   
+        print(worker_cql)
+        session.execute(worker_cql)      
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Employee '" + name + "' with role '"+ role+"' added Successfully!\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_workers\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_worker_by_id<"+str(id)+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        result =  Response (result, status = 200, mimetype = 'application/json')
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
+    
 #------------------- REST implementation with HATEOAS ----------------
 
 @app.route("/rest/get_all_tasks")
@@ -255,26 +280,30 @@ def get_task_details_by_id_rest(id):
 @app.route('/rest/delete_task_by_id<id>', methods=['GET', 'POST'])
 @login_required
 def delete_task_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    print(id)
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    namecql = "SELECT * FROM tasks where id = "+id
-    tnameres = session.execute(namecql)
-    tname = tnameres[0].name
-    tcql = "DELETE FROM tasks where id = "+id
-    print(tcql)
-    session.execute(tcql)    
-    scql = "SELECT * FROM sub_tasks where task_id='"+id+"' ALLOW FILTERING"
-    print(scql)
-    listOfSubTasks = session.execute(scql)
-    for row in listOfSubTasks:
-        deleteSubTaskcql = "DELETE FROM sub_tasks where id="+str(row.id)
-        print(deleteSubTaskcql)
-        session.execute(deleteSubTaskcql)
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted task '"+ tname +"' and corresponding sub-tasks!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
+    try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        print(id)
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        namecql = "SELECT * FROM tasks where id = "+id
+        tnameres = session.execute(namecql)
+        tname = tnameres[0].name
+        tcql = "DELETE FROM tasks where id = "+id
+        print(tcql)
+        session.execute(tcql)    
+        scql = "SELECT * FROM sub_tasks where task_id='"+id+"' ALLOW FILTERING"
+        print(scql)
+        listOfSubTasks = session.execute(scql)
+        for row in listOfSubTasks:
+            deleteSubTaskcql = "DELETE FROM sub_tasks where id="+str(row.id)
+            print(deleteSubTaskcql)
+            session.execute(deleteSubTaskcql)
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message"+":\"Deleted task '"+ tname +"' and corresponding sub-tasks!\"}"+"],\n\"links\": [ { \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"child\",\n \"href\": \""+ "/rest/get_sub_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        result =  Response (result, status = 200, mimetype = 'application/json')
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 
 
@@ -352,20 +381,23 @@ def get_sub_tasks_by_task_id_rest(id):
 @app.route('/rest/delete_sub_task_by_id<id>', methods=['GET', 'POST'])
 @login_required
 def delete_sub_task_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    print(id)
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    namecql = "SELECT * FROM sub_tasks where id = "+id
-    snameres = session.execute(namecql)
-    sname = snameres[0].name
-    cql = "DELETE FROM sub_tasks where id = "+id
-    print(cql)
-    session.execute(cql)    
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted sub-task '"+ sname +"'\","+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_sub_task_details_by_id<"+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_sub_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
-
+    try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        print(id)
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        namecql = "SELECT * FROM sub_tasks where id = "+id
+        snameres = session.execute(namecql)
+        sname = snameres[0].name
+        cql = "DELETE FROM sub_tasks where id = "+id
+        print(cql)
+        session.execute(cql)    
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted sub-task '"+ sname +"'\","+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_sub_tasks\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_sub_task_details_by_id<"+id+"\" \n },{ \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/delete_sub_task_by_id<"+id+"\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        result = Response (result, status = 200, mimetype = 'application/json')
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 #------------ Workers/Employees ----------- 
 
 @app.route("/rest/get_all_workers")
@@ -414,42 +446,50 @@ def get_all_users_rest():
 @app.route("/get_all_workers")
 @login_required
 def get_all_workers():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    cql = "SELECT * FROM users"
-    r = list (session.execute(cql))
-    print(len(r))
-    res_htm = "<h1> List of Employees : </h1><ol>"
-    for i,row in enumerate(r,0): 
-        res_htm = res_htm +"<li><a href= /rest/get_worker_by_id<"+str(row.id)+">"+str(row.name)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click Employee ID for rest call to delete Employee (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/delete_worker_by_id<"+str(row.id)+">"+str(row.id)+"</a>&nbsp;&nbsp;&nbsp;"+str(row.role)+"</li>"
-    res_htm = res_htm+"</ol>"
-    return res_htm
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        cql = "SELECT * FROM users"
+        r = list (session.execute(cql))
+        print(len(r))
+        res_htm = "<h1> List of Employees : </h1><ol>"
+        for i,row in enumerate(r,0): 
+            res_htm = res_htm +"<li><a href= /rest/get_worker_by_id<"+str(row.id)+">"+str(row.name)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click Employee ID for rest call to delete Employee (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/delete_worker_by_id<"+str(row.id)+">"+str(row.id)+"</a>&nbsp;&nbsp;&nbsp;"+str(row.role)+"</li>"
+        res_htm = res_htm+"</ol>"
+        result = res_htm
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 @app.route("/get_all_users")
 @login_required
 @role_based_access_control
 def get_all_users():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    cql = "SELECT * FROM login"
-    r = list (session.execute(cql))
-    print(len(r))
-    res_htm = "<h1> List of Employees : </h1><ol>"
-    for i,row in enumerate(r,0): 
-        res_htm = res_htm +"<li><a href= /rest/get_user_by_id<"+str(row.id)+">"+str(row.uname)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click User ID for rest call to delete Employee (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/delete_user_by_id<"+str(row.id)+">"+str(row.id)+"</a>&nbsp;&nbsp;&nbsp;"+str(row.role)+"</li>"
-    res_htm = res_htm+"</ol>"
-    return res_htm
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        cql = "SELECT * FROM login"
+        r = list (session.execute(cql))
+        print(len(r))
+        res_htm = "<h1> List of Employees : </h1><ol>"
+        for i,row in enumerate(r,0): 
+            res_htm = res_htm +"<li><a href= /rest/get_user_by_id<"+str(row.id)+">"+str(row.uname)+"</a>&nbsp;&nbsp;&nbsp;&nbsp;"+"   - &nbsp;&nbsp;  Click User ID for rest call to delete Employee (with HATEOAS)    - &nbsp;&nbsp;&nbsp;&nbsp;<a href = /rest/delete_user_by_id<"+str(row.id)+">"+str(row.id)+"</a>&nbsp;&nbsp;&nbsp;"+str(row.role)+"</li>"
+        res_htm = res_htm+"</ol>"
+        result = res_htm
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 
 #------------App users - Only the admin of the application has access-----------------
 @app.route("/rest/get_worker_by_id<id>")
 @login_required
-def get_worker_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    print(id)
-    result = ""
+def get_worker_by_id(id):    
     try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        print(id)
+        result = ""
         session = cassandra.connect()
         session.set_keyspace("todo")
         cql = "SELECT * FROM users where id = "+id
@@ -471,11 +511,11 @@ def get_worker_by_id(id):
 @login_required
 @role_based_access_control
 def get_user_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    print(id)
-    result = ""
     try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        print(id)
+        result = ""
         session = cassandra.connect()
         session.set_keyspace("todo")
         cql = "SELECT * FROM login where id = "+id
@@ -497,38 +537,46 @@ def get_user_by_id(id):
 @login_required
 @role_based_access_control
 def delete_worker_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    print(id)
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    namecql = "SELECT * FROM users where id = "+id
-    snameres = session.execute(namecql)
-    sname = snameres[0].name
-    cql = "DELETE FROM users where id = "+id
-    print(cql)
-    session.execute(cql)    
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted worker'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+"/rest/get_all_workers\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
+    try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        print(id)
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        namecql = "SELECT * FROM users where id = "+id
+        snameres = session.execute(namecql)
+        sname = snameres[0].name
+        cql = "DELETE FROM users where id = "+id
+        print(cql)
+        session.execute(cql)    
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted worker'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+"/rest/get_all_workers\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        result = Response (result, status = 200, mimetype = 'application/json')
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 
 @app.route('/rest/delete_user_by_id<id>', methods=['GET', 'POST'])
 @login_required
 @role_based_access_control
 def delete_user_by_id(id):
-    id=id.replace("<","")
-    id=id.replace(">","")
-    print(id)
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    namecql = "SELECT * FROM login where id = "+id
-    snameres = session.execute(namecql)
-    sname = snameres[0].uname
-    cql = "DELETE FROM login where id = "+id
-    print(cql)
-    session.execute(cql)    
-    result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted user'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_users\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
-    return Response (result, status = 200, mimetype = 'application/json')
+    try:
+        id=id.replace("<","")
+        id=id.replace(">","")
+        print(id)
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        namecql = "SELECT * FROM login where id = "+id
+        snameres = session.execute(namecql)
+        sname = snameres[0].uname
+        cql = "DELETE FROM login where id = "+id
+        print(cql)
+        session.execute(cql)    
+        result = "{  \"success\": true,\n   \"status\":\"200\",\n   \"payload\":[{\"message\""+":\"Deleted user'"+ sname +"'\"}"+"],\n\"links\": [ { \n \"rel\" : \"self\",\n \"href\": \""+ "/rest/get_all_users\" \n }],\"host-IP\" :\""+request.environ.get('HTTP_X_REAL_IP', request.remote_addr)+"\" }"
+        result = Response (result, status = 200, mimetype = 'application/json')
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 
 
@@ -553,7 +601,7 @@ def login():
             pwd = r[0].pwd
             role = r[0].role
             if  not(pwd == hashing.hash_value(request.form['password'], salt=app.config['SALT'])):
-                error = 'Invalid Credentials. Please try again. Why not sign up?'
+                error = 'Invalid Credentials. Please try again. Why not sign up if you dont have an account?'
             else:
                 session['logged_in'] = True
                 session['role'] = role
@@ -567,17 +615,21 @@ def login():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    session = cassandra.connect()
-    session.set_keyspace("todo")
-    error = None
-    if request.method == 'POST':
-        pw_hash = hashing.hash_value(request.form['password'], salt=app.config['SALT'])
-        cql = "INSERT INTO login (id,pwd,uname,role) VALUES(UUID(),'"+pw_hash+"','"+request.form['username']+"','user')"
-        print(cql)
-        r = list (session.execute(cql))
-        error = "Login Created Successfully!"
-        return redirect(url_for('login'))
-    return render_template('signup.html', error=error)
+    try:
+        session = cassandra.connect()
+        session.set_keyspace("todo")
+        error = None
+        if request.method == 'POST':
+            pw_hash = hashing.hash_value(request.form['password'], salt=app.config['SALT'])
+            cql = "INSERT INTO login (id,pwd,uname,role) VALUES(UUID(),'"+pw_hash+"','"+request.form['username']+"','user')"
+            print(cql)
+            r = list (session.execute(cql))
+            error = "Login Created Successfully!"
+            return redirect(url_for('login'))
+        return render_template('signup.html', error=error)
+    except Exception as e:         
+        result = Response ("{  \n   \"success\" : \"false\", \n   \"code\": \""+type(e).__name__+"\",\n   \"message\" : \""+ str(e)+"\"\n}",status=500,mimetype = 'application/json')
+    return result
 
 @app.route('/logout')
 @login_required
