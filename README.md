@@ -2,7 +2,11 @@
 RESTful application using python and flask for Cloud computing coursework.
 
 # Introduction to App - 'All in one Dashboard'
-This is a 'Task management' application that allows users to view,delete,assign tasks and sub-tasks. The following implementations are made as per mini-project specification
+This is a 'Task management' application that allows users to view,delete,assign tasks and sub-tasks. 
+
+# Implementations
+
+The following implementations are made as per mini-project specification
 
 1. REST based application Interface (The application has more than 15 APIs performing GET and POST actions with HATEOAS implementation communicating with Cassandra Database)
 2. Interaction with external REST services. (The application uses Twitter API to get top-10 tweets on a topic of user's choice)
@@ -30,11 +34,57 @@ The above points are to be considered for 6/10 points and the below add-ons are 
     - Request followup orchestration using HATEOAS - All the REST API responses from the application have HATEOAS implemented to present       to the user with urls for other REST APIs that might interest the user for navigation through API responses or Request followup         orchestration.
     
     - Complex database implementation including data schema design, or substantial write operations - The application uses 4 tables           (tasks,sub_tasks,users,login) and their relationship is as follows
-                  
-      
+                  1. Task -------< Sub-task             (One - Many relationship based on task Id. A task can have multiple sub-task)
+                  2. Task ------- Assignee/user/worker  (One Task is assigned to one employee/worker)
+                  3. Sub-task ------- Assignee/user/worker  (One Sub-Task is assigned to one employee/worker)
+            The login table contains the application users credentials and also their roles based on which their privileges and access               will be managed upon login.
+ 
+ # Setup and Installation
+ 
+ ***Follow the below commands and instructions to deploy the application in a Single node***
+ 
+ **Requirements**
+        Python, Cassandra Database, Browser and all the modules mentioned in requirements.txt file
     
+        1. Download the project from GIT and navigate to python_flask_rest_app 
+        2. Make sure you have cassandra database installed and running with necessary keyspace and tables,users are created (refer to                    misc/cassandra-queries.txt)
+        2. Activate python environment and run python app.py
+        3. The application should run on localhost:5000
+        
+  
+ ***Follow the below commands and instructions to deploy the application in a gcloud cluster***
+ 
+ **Requirements**
+        Python, Cassandra Database, GCloud, Kubernetes and all the modules mentioned in requirements.txt file
     
+        1. Login to Gcloud platform and open Gcloud shell
+        2. Export Project ID using 
+              export PROJECT_ID="$(gcloud config get-value project -q)"
+        3. Create a new folder and clone the application source files
+        4. Create a n node container cluster the command
+              gcloud container clusters create cassandra --num-nodes=n --machine-type "n1-standard-2" --zone  europe-west2-a
+          (You can chose any name for the cluster, any machine type or zone)
+          It will take some time for the cluster to be provisioned
+        4. Navigate to the folder and 
+        Download the project from GIT and navigate to python_flask_rest_app 
+        5. Inside the project folder there are 3 yml files cassandra-peer-service.yml, cassandra-service.yml, cassandra-replication-                controller.yml
+           Each file is for creating a service like replication, intra-node communication. Run the following commands to create these              services
+               kubectl create -f cassandra-peer-service.yml
+               kubectl create -f cassandra-service.yml
+               kubectl create -f cassandra-replication-controller.yml
+        6. Create necessary keyspace and tables and users (refer to misc/cassandra-queries.txt)
+        7. Build a docker image 
+               docker build -t gcr.io/${PROJECT_ID}/miniproj-app:v1 .
+        8. Push the image to gcr.io
+               docker push gcr.io/${PROJECT_ID}/miniproj-app:v1
+        9. Run the application by pulling the image
+               kubectl run miniproj-app --image=gcr.io/${PROJECT_ID}/miniproj-app:v1 --port 8080
+        10. Expose port for port mapping
+               kubectl expose deployment miniproj-app --type=LoadBalancer --port 80 --target-port 8080
     
+        11. Run kubectl get services to find the external IP of the load balancer 
+        12. Visit the external IP using a browser, each consecutive request will be served by a different machine in the cluster which               can be verified by the HOST-IP field in API responses.
+        
     
     
     
