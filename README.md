@@ -81,9 +81,11 @@ The above implementations are to be considered for 6/10 points and the below add
                kubectl run miniproj-app --image=gcr.io/${PROJECT_ID}/miniproj-app:v1 --port 8080
         10. Expose port for port mapping
                kubectl expose deployment miniproj-app --type=LoadBalancer --port 80 --target-port 8080
-    
-        11. Run kubectl get services to find the external IP of the load balancer 
-        12. Visit the external IP using a browser, each consecutive request will be served by a different machine in the cluster which               can be verified by the HOST-IP field in API responses.
+        11. Steps 9 and 10 can be replaced by a shorthand method to create deployment and loadbalancer by running kubectl create command             on deployment.yml and loadbalancer.yml using the below commands
+               kubectl create -f deployment.yml
+               kubectl create -f loadbalancer.yml
+        12. Run kubectl get services to find the external IP of the load balancer 
+        13. Visit the external IP using a browser, each consecutive request will be served by a different machine in the cluster which               can be verified by the HOST-IP field in API responses.
         
     
     
